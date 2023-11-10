@@ -10,30 +10,29 @@ function App() {
   const [previousOperator, setPreviousOperator] = useState("")
   const [result, setResult] = useState("")
   
+  /*
   console.log("CHARGEMENT DE LA PAGE")
   console.log("numbersList : " + numbersList)
   console.log("concatNumber : " + concatNumber)
   console.log("previousOperator : " + previousOperator)
   console.log("result : " + result)
+  */
 
   // Les fonctions anonymes dans la propriété "onClick" des boutons renvoit l'info passée en paramètre à la fonction handlerNumber.
   const handlerNumbers = useCallback((value: string) => {
 
     setResult(result + value) // Mise à jour de la valeur qui s'affiche dans la zone "résultat"
 
-    console.log("numbersList[numbersList.length-1] = " + numbersList[numbersList.length-1])
+    //console.log("numbersList[numbersList.length-1] = " + numbersList[numbersList.length-1])
     if(numbersList[numbersList.length-1]=="=") { // Si on veut refaire un calcul après avoir déjà fait une opération précédement.
       setNumbersList([])
       setResult(value)
     }
-    if(value == "+" || value == "-" || value == "="){ // Si on a cliqué sur un opérateur...
+    if(value == "-" || value == "+" || value == "/" || value == "x" || value == "="){ // Si on a cliqué sur un opérateur...
       
       setPreviousOperator(value) // nouvelle valeur de l'opérateur mis à jour.
       
-      if(previousOperator == "+" || previousOperator == "-") { // Si on a cliqué 2 fois d'affilé sur un opérateur.
-
-        console.log("Le previousOperator, c'est : " + previousOperator)
-        console.log("Le numbersList, c'est : " + numbersList)
+      if(previousOperator == "-" || previousOperator == "+" || previousOperator == "/" || previousOperator == "x") { // Si on a cliqué 2 fois d'affilé sur un opérateur.
 
         numbersList[numbersList.length-1] = value
 
@@ -56,27 +55,39 @@ function App() {
     if(value == "=") {
       let calculResult = 0;
 
-      if(numbersList[numbersList.length-1] == "+" || numbersList[numbersList.length-1] == "-") {
+      if(numbersList[numbersList.length-1] == "-" || numbersList[numbersList.length-1] == "+" || numbersList[numbersList.length-1] == "/" || numbersList[numbersList.length-1] == "x") {
         numbersList.pop() // supprime le dernier élément du tableau à l'index "numbersList.length-1".
       }
 
       for (let index = 1; index < numbersList.length; index+=2) {
-        console.log("TEST")
-        console.log(numbersList[index])
+        //console.log("TEST")
+        //console.log(numbersList[index])
         if(numbersList[index] && numbersList[index+1]) {
-          console.log("element à l'index " + index + " : ", numbersList[index])
-          if(numbersList[index] == "+") {
+          //console.log("element à l'index " + index + " : ", numbersList[index])
+          if(numbersList[index] == "-") {
             if(index==1){
-              calculResult = parseInt(numbersList[index-1]) + parseInt(numbersList[index+1])
+              calculResult = parseFloat(numbersList[index-1]) - parseFloat(numbersList[index+1])
             } else {
-              calculResult += parseInt(numbersList[index+1])
+              calculResult -= parseFloat(numbersList[index+1])
             }
-          } else if(numbersList[index] == "-") {
+          } else if(numbersList[index] == "+") {
             if(index==1){
-              calculResult = parseInt(numbersList[index-1]) - parseInt(numbersList[index+1])
+              calculResult = parseFloat(numbersList[index-1]) + parseFloat(numbersList[index+1])
             } else {
-              calculResult -= parseInt(numbersList[index+1])
-            }
+              calculResult += parseFloat(numbersList[index+1])
+            } 
+          } else if(numbersList[index] == "/") {
+            if(index==1){
+              calculResult = parseFloat(numbersList[index-1]) / parseFloat(numbersList[index+1])
+            } else {
+              calculResult /= parseFloat(numbersList[index+1])
+            } 
+          } else if(numbersList[index] == "x") {
+            if(index==1){
+              calculResult = parseFloat(numbersList[index-1]) * parseFloat(numbersList[index+1])
+            } else {
+              calculResult *= parseFloat(numbersList[index+1])
+            } 
           }
         }
         setResult(calculResult.toString())
@@ -106,6 +117,8 @@ function App() {
           <div className='column col-3'>
             <button onClick={() => handlerNumbers("-")} className='col-12'>-</button>
             <button onClick={() => handlerNumbers("+")} className='col-12'>+</button>
+            <button onClick={() => handlerNumbers("/")} className='col-12'>/</button>
+            <button onClick={() => handlerNumbers("x")} className='col-12'>x</button>
             <button onClick={() => handlerNumbers("=")} className='col-12'>=</button>
           </div>
         </div>
