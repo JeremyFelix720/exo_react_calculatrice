@@ -19,81 +19,102 @@ function App() {
   */
 
   // Les fonctions anonymes dans la propriété "onClick" des boutons renvoit l'info passée en paramètre à la fonction handlerNumber.
-  const handlerNumbers = useCallback((value: string) => {
+  const handlerNumbers = (value: string) => {
 
-    setResult(result + value) // Mise à jour de la valeur qui s'affiche dans la zone "résultat"
+    let newResult = result + value
+    let newConcatNumber = ""
+    let newPreviousOperator = ""
+    let newNumberList = numbersList.slice()
 
     //console.log("numbersList[numbersList.length-1] = " + numbersList[numbersList.length-1])
-    if(numbersList[numbersList.length-1]=="=") { // Si on veut refaire un calcul après avoir déjà fait une opération précédement.
-      setNumbersList([])
-      setResult(value)
-    }
-    if(value == "-" || value == "+" || value == "/" || value == "x" || value == "="){ // Si on a cliqué sur un opérateur...
+    if(newNumberList[newNumberList.length-1]=="=" || value == "C") { // Si on veut refaire un calcul après avoir déjà fait une opération précédement.
       
-      setPreviousOperator(value) // nouvelle valeur de l'opérateur mis à jour.
+      newNumberList = ["0"]
+      newResult = "0"
+
+      //return 0
+    } else if(value == "-" || value == "+" || value == "/" || value == "x" || value == "="){ // Si on a cliqué sur un opérateur...
+      
+      newPreviousOperator = value // nouvelle valeur de l'opérateur mis à jour.
       
       if(previousOperator == "-" || previousOperator == "+" || previousOperator == "/" || previousOperator == "x") { // Si on a cliqué 2 fois d'affilé sur un opérateur.
 
-        numbersList[numbersList.length-1] = value
+        newNumberList[newNumberList.length-1] = value
 
         // Mise à jour du résulat affiché avec la nouvelle valeur de l'opérateur.
         let numbersListFilling = "";
-        for (let index = 0; index < numbersList.length; index++) {
-          numbersListFilling += numbersList[index];
+        for (let index = 0; index < newNumberList.length; index++) {
+          numbersListFilling += newNumberList[index];
         }
-        setResult(numbersListFilling)
+        newResult = numbersListFilling
       } else {
-        numbersList.push(concatNumber)
-        numbersList.push(value)
-        setConcatNumber("")
+        newNumberList.push(concatNumber)
+        newNumberList.push(value)
+        newConcatNumber = ""
       }
     } else { // Si on a cliqué sur un nombre...
-      setConcatNumber(concatNumber + value)
-      setPreviousOperator("")
+
+      if (result == "0") {
+        newNumberList = [""]
+        newResult = ""
+      }
+
+      newConcatNumber += value
+      newPreviousOperator = ""
     }
 
     if(value == "=") {
+      console.log("TOTO : " + newNumberList)
+
       let calculResult = 0;
 
-      if(numbersList[numbersList.length-1] == "-" || numbersList[numbersList.length-1] == "+" || numbersList[numbersList.length-1] == "/" || numbersList[numbersList.length-1] == "x") {
-        numbersList.pop() // supprime le dernier élément du tableau à l'index "numbersList.length-1".
+      if(["/", "+", "-", "=", "x"].find(operator => operator === newNumberList[newNumberList.length-1])) {
+        newNumberList.pop() // supprime le dernier élément du tableau à l'index "numbersList.length-1".
       }
 
-      for (let index = 1; index < numbersList.length; index+=2) {
+      for (let index = 1; index < newNumberList.length; index+=2) {
         //console.log("TEST")
         //console.log(numbersList[index])
-        if(numbersList[index] && numbersList[index+1]) {
+        if(newNumberList[index] && newNumberList[index+1]) {
           //console.log("element à l'index " + index + " : ", numbersList[index])
-          if(numbersList[index] == "-") {
+          if(newNumberList[index] == "-") {
             if(index==1){
-              calculResult = parseFloat(numbersList[index-1]) - parseFloat(numbersList[index+1])
+              calculResult = parseFloat(newNumberList[index-1]) - parseFloat(newNumberList[index+1])
             } else {
-              calculResult -= parseFloat(numbersList[index+1])
+              calculResult -= parseFloat(newNumberList[index+1])
             }
-          } else if(numbersList[index] == "+") {
+          } else if(newNumberList[index] == "+") {
             if(index==1){
-              calculResult = parseFloat(numbersList[index-1]) + parseFloat(numbersList[index+1])
+              calculResult = parseFloat(newNumberList[index-1]) + parseFloat(newNumberList[index+1])
             } else {
-              calculResult += parseFloat(numbersList[index+1])
+              calculResult += parseFloat(newNumberList[index+1])
             } 
-          } else if(numbersList[index] == "/") {
+          } else if(newNumberList[index] == "/") {
             if(index==1){
-              calculResult = parseFloat(numbersList[index-1]) / parseFloat(numbersList[index+1])
+              calculResult = parseFloat(newNumberList[index-1]) / parseFloat(newNumberList[index+1])
             } else {
-              calculResult /= parseFloat(numbersList[index+1])
+              calculResult /= parseFloat(newNumberList[index+1])
             } 
-          } else if(numbersList[index] == "x") {
+          } else if(newNumberList[index] == "x") {
             if(index==1){
-              calculResult = parseFloat(numbersList[index-1]) * parseFloat(numbersList[index+1])
+              calculResult = parseFloat(newNumberList[index-1]) * parseFloat(newNumberList[index+1])
             } else {
-              calculResult *= parseFloat(numbersList[index+1])
+              calculResult *= parseFloat(newNumberList[index+1])
             } 
           }
         }
-        setResult(calculResult.toString())
+        newResult.toString()
       }
     }
-  }, [result, numbersList, concatNumber, previousOperator])
+
+    // SETTERS
+
+    setNumbersList(newNumberList)
+    setPreviousOperator(newPreviousOperator)
+    setConcatNumber(newConcatNumber)
+    setResult(newResult) // Mise à jour de la valeur qui s'affiche dans la zone "résultat"
+
+  }
 
   return (
     <>
@@ -115,11 +136,12 @@ function App() {
             <button onClick={() => handlerNumbers("0")} className='col-4'>0</button>
           </div>
           <div className='column col-3'>
-            <button onClick={() => handlerNumbers("-")} className='col-12'>-</button>
-            <button onClick={() => handlerNumbers("+")} className='col-12'>+</button>
-            <button onClick={() => handlerNumbers("/")} className='col-12'>/</button>
-            <button onClick={() => handlerNumbers("x")} className='col-12'>x</button>
-            <button onClick={() => handlerNumbers("=")} className='col-12'>=</button>
+            <button onClick={() => handlerNumbers("-")} className='col-6'>-</button>
+            <button onClick={() => handlerNumbers("+")} className='col-6'>+</button>
+            <button onClick={() => handlerNumbers("/")} className='col-6'>/</button>
+            <button onClick={() => handlerNumbers("x")} className='col-6'>x</button>
+            <button onClick={() => handlerNumbers("=")} className='col-6'>=</button>
+            <button onClick={() => handlerNumbers("C")} className='col-6'>C</button>
           </div>
         </div>
       </div>
@@ -128,5 +150,30 @@ function App() {
 }
 
 export default App
+
+
+// Les setters ne se modifient qu'à la fin des fonctions, pas au moment où on écrit "set(...)". Introduire autant de variables que de setter au début des fonctions puis mettre à jour les états à la fin seulement ! [OK]
+
+
+
+
+// previousResult usestate
+// Si on clique sur "=" : setPreviousResult(parseInt(result))
+
+// Dans handlerNumbers, si on clique sur un opérateur :
+// if previousResult != 0
+// vider tableau numbersList
+// index 0 : previousNumber  /  index 1 : opérateur cliqué
+// setPreviousResult(0)
+
+// rajouter une touche "C" pour tout effacer (pareil quand on tape un nombre après le resultat d'une opération)
+// mettre numbersList = []
+// mettre le previousResult a 0
+
+
+
+
+// Il faut continuer à faire des calculs après un premier résultat.
+
 
 // ENFANTS
